@@ -1,0 +1,778 @@
+---
+title: "pitty_figures"
+output: html_document
+date: "2025-05-12"
+editor_options: 
+  chunk_output_type: console
+---
+
+#BEGINNING
+house and tools house and tools 
+```{r}
+setwd("/Users/piyaverma/Downloads/R") 
+install.packages(tidyverse)
+library(psych)
+library(ggplot2)
+library(ggExtra)
+install.packages("ggExtra")
+library(ggeffects)
+```
+
+#read in 
+
+```{r}
+read.csv("/Users/piyaverma/Downloads/R/grand_diva.csv")
+```
+
+after meeting with Bea + Finn, they wanted a data point graph with histograms on the top and side of severity x count using raw observations 
+didn't end up using 
+```{r}
+#trying to pick up where i left off after sending severity x count graph to Finn by adding the age group colors .i think solution is to find a way to include age_group in test or in ggplot itself 
+# test <- data.frame( 
+#   count = rpois(100, lambda = 10),
+#   severity = rnorm(100, mean = 50, sd = 10)
+# )
+# 
+# p <- ggplot(test, aes(x = count, y = severity)) +
+#   geom_point(alpha = 0.7) +
+#   theme_minimal() +
+#   labs(x = "Count", y = "Severity") +
+#   theme(
+#     panel.border = element_blank(),
+#     axis.title.x = element_text(margin = margin(t = 10)),  # Move x label down
+#     axis.title.y = element_text(margin = margin(r = 10)) )
+# 
+# p_marginal <- ggMarginal(p, type = "histogram", fill = "skyblue", alpha = 0.5)
+
+# Save the plot (adjust size as needed)
+# ggsave(".png", plot = p_marginal, width = 6, height = 4.5, dpi = 300)
+# ggplot(grand_visit, aes(x = count, y = severity, color = age_group)) +
+#   geom_point() +
+#   theme_minimal() +
+#   labs(x= "Count", y = "Severity", color = "Age Group")
+
+```
+
+#methods severity distrubition
+```{r}
+ggplot(grand_diva, aes(x = age, y = severity)) +
+  geom_point(alpha = 1, color = "steelblue") +
+  geom_smooth(method = "lm", color = "darkred", size = 1) +
+  theme_modern() +
+  labs(
+    title = NULL,
+    x = "Age",
+    y = "Stress Severity"
+  )
+
+#out of curiosity
+ggplot(grand_diva, aes(x = age, y = sum_tot)) +
+  geom_point(alpha = 1, color = "steelblue") +
+  # geom_smooth(method = "loess", color = "darkred", size = 1) +
+  theme_modern() +
+  labs(
+    title = NULL,
+    x = "Age",
+    y = "Impulsivity"
+  )
+```
+
+
+# figure 1. upps ~ age 
+##model predictions
+```{r}
+
+# ggplot(data = grand_diva, aes(x = age, y = posurg)) + 
+#   #geom_point() + 
+#   geom_smooth(method = "lm", se = FALSE) +
+#   labs(color = "Study Group") +
+#   theme_minimal()
+
+#can do in console: view(df)
+#Dan note: Extract predictions into a data frame 
+sum_tot_age_pred <- ggpredict(sum_tot_age, terms = "age")
+
+negurg_age_pred <- ggpredict(negurg_age, terms = "age")
+
+pre_age_pred <- ggpredict(pre_age, terms = "age")
+
+pers_age_pred <- ggpredict(pers_age, terms = "age")
+
+ss_age_pred <- ggpredict(ss_age, terms = "age")
+
+posurg_age_pred <- ggpredict(posurg_age, terms = "age")
+
+```
+
+
+##adding upps_var
+for r bind
+
+```{r}
+sum_tot_age_pred <- sum_tot_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Total Impulsivity")
+
+negurg_age_pred <- negurg_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Negative Urgency")
+
+pre_age_pred <- pre_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Lack of Premeditation")
+
+pers_age_pred <- pers_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Lack of Perseverance")
+
+ss_age_pred <- ss_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Sensation Seeking")
+
+posurg_age_pred <- posurg_age_pred %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Positive Urgency")
+
+
+```
+
+##rbind
+```{r}
+df_pred_all <- rbind(sum_tot_age_pred, negurg_age_pred,
+                     pre_age_pred, pers_age_pred,
+                     ss_age_pred, posurg_age_pred)
+
+```
+
+##plot
+predicting the line of the linear models 
+```{r}
+install.packages("see")
+library(see)
+ggplot(df_pred_all, aes(x = x, y = predicted, color = upps_var)) +
+  geom_line(size = .8) +
+  labs(
+    x = "Age",
+    y = "Mean UPPS Score",
+    color = "UPPS Subscales"
+  ) +
+   theme_modern() #+ theme(legend.position = "none")
+
+#checking sensation seeking flat line 
+# do in console: hist(grand_diva$ss)
+#usually ss is inverted u with a peak in adolescents but usually that is depicted in larger datasets 
+ggplot(data = grand_diva, aes(x = age, y = ss, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+
+ggplot(grand_diva, aes(x = age, y = ss)) +
+  geom_point(alpha = 0.6) +  # scatter points
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +  # regression line with CI
+  labs(
+    x = "Age",
+    y = "Sensation Seeking",
+    title = "Sensation Seeking by Age"
+  ) +
+  theme_minimal()
+```
+
+
+##error bars?
+changing long to wide ... whyyyyy finnnnn
+```{r}
+upps_df <- grand_diva %>%
+  pivot_longer(
+    cols = c(negurg, pre, pers, ss, posurg, sum_tot),
+    names_to = "upps_measure",
+    values_to = "upps_value"
+  ) %>%
+  select(ID, age, study, sex, upps_measure, upps_value)
+
+ggplot(data = upps_df, aes(x = age, y = upps_value, color = upps_measure)) +
+ stat_smooth(aes(fill=upps_measure), method='gam', se=T, alpha=0.2) +
+ theme_bw()
+
+ggplot(data = upps_df, aes(x = age, y = upps_value, color = upps_measure))
+```
+
+deciding to continue editing the one i had originally without the rainbow fuzzy and adding * in ppt  
+
+#figure 2a: upps ~ stress
+##model predictions
+QUESTION FOR DAN - TERMS? should that be age or should be severity/count if the lm looked like: 
+
+lm(sum_tot ~ severity + study + age,  
+                             data = grand_diva) 
+```{r}
+severity_pred <- ggpredict(sumtot_severity_me, terms = "severity")
+count_pred <- ggpredict(sumtot_count_me, terms = "count")
+```
+
+##stress_var
+```{r}
+severity_pred <- severity_pred %>% 
+  as_tibble() %>%  
+  mutate(stress_var = "Severity")
+count_pred    <- count_pred %>%
+  as_tibble() %>%  
+  mutate(stress_var = "Count")
+```
+
+##rbind
+
+```{r}
+df_stress_all <- rbind(severity_pred,count_pred)
+```
+
+##plot
+```{r}
+# ggplot(df_stress_all, aes(x = x, y = predicted, color = stress_var)) +
+#   geom_line(size = .8) +
+#   geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = stress_var), alpha = 0.1, color = NA) +
+#   labs(
+#     x = "Stress",
+#     y = "Total Impulsivity",
+#     color = "Stress",
+#     fill = "Stress",
+#     title = NULL
+#   ) +
+#   theme_minimal()
+
+ggplot(df_stress_all, aes(x = x, y = predicted)) +
+  geom_line(aes(color = stress_var), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = stress_var), alpha = 0.1, color = NA) +
+  #geom_point() +
+  labs(
+    x = "Stress",
+    y = "Total Impulsivity",
+    title = NULL
+  ) +
+  facet_wrap(~stress_var, scales = "free_x", 
+             labeller = as_labeller(c(
+               Count = "Count", 
+               Severity = "Severity"
+             ))) +  # different x-ranges per facet
+  theme_modern() +
+  theme(legend.position = "none")
+
+```
+
+
+#figure 2b: subscales ~ severity
+##model prediction
+##adding upps_var
+```{r}
+
+#template: 
+#df_pred <- ggpredict(df_lm, terms = "age") --> what would terms be though? severity?
+
+sumtot_severity_pred <- ggpredict(sumtot_severity_me , terms = "severity") %>%
+  as_tibble() %>%                      # Ensure it’s a flat tibble
+  mutate(upps_var = "Total Impulsivity")
+
+negurg_severity_pred <- ggpredict(negurg_severity_me, terms = "severity") %>%
+  as_tibble() %>%                    
+  mutate(upps_var = "Negative Urgency")
+
+
+pre_severity_pred <- ggpredict(pre_severity_me, terms = "severity")%>%
+  as_tibble() %>%                    
+  mutate(upps_var = "Lack of Premeditation")
+
+
+pers_severity_pred <- ggpredict(pers_severity_me, terms = "severity") %>%
+  as_tibble() %>%                    
+  mutate(upps_var = "Lack of Perseverance")
+
+
+ss_severity_pred <- ggpredict(ss_severity_me, terms = "severity")%>%
+  as_tibble() %>%                    
+  mutate(upps_var = "Sensation Seeking")
+
+
+posurg_severity_pred <- ggpredict( posurg_severity_me, terms = "severity") %>%
+  as_tibble() %>%                    
+  mutate(upps_var = "Positive Urgency")
+
+
+```
+
+##rbind
+```{r}
+severity_subscales_pred <- rbind(sumtot_severity_pred,negurg_severity_pred, 
+                                 pre_severity_pred, pers_severity_pred, 
+                                 ss_severity_pred, posurg_severity_pred)
+```
+
+
+##plot
+```{r}
+ggplot(severity_subscales_pred, aes(x = x, y = predicted, color = upps_var)) +
+  geom_line(size = .8) +
+  labs(
+    x = "Severity",
+    y = "Impulsivity",
+    color = "UPPS Subscales",
+   # title = NULL
+  ) +
+  theme_modern() + theme(legend.position = "none") 
+```
+
+
+#figure 3: johnson neyman
+
+```{r}
+
+install.packages("interactions")
+library(interactions)
+sum_tot_severity_age <- lm(sum_tot ~ severity * age, data = grand_diva)
+
+jn_result <- johnson_neyman(sum_tot_severity_age, pred = "severity", modx = "age")
+
+# jn_result$plot +
+#   labs(
+#     x = "Age (Years)",
+#     y = "Effect of Stress Severity on Impulsivity",
+#     title = NULL, 
+#     color = NULL
+#   ) +
+#   theme_classic() +
+#   theme(
+#     plot.title = element_text(hjust = 0.18, size = 12, face = "bold"),
+#     axis.title.y = element_text(margin = margin(r = 10)),       # add space between y-axis title and axis
+#     plot.margin = margin(t = 10, r = 5, b = 5, l = 10)        # top, right, bottom, left
+#   )
+
+#trying to get rid of the ugly freaking cbso1 [,"Significance"]
+jn_result$plot +
+  labs(
+    title = NULL,  # Removes the title
+    x = "Age (Years)",  # Your custom x-axis label
+    y = "Effect of Stress Severity on Impulsivity"  # Your custom y-axis label
+  ) +
+  theme(
+    plot.title = element_blank()  # Double ensures no leftover title
+  )
+
+```
+
+#figure 4a: severity ~ urgency 
+##model predictions 
+
+lm models: 
+(1) model_nu_adol <- lm(negurg ~ severity, data = grand_diva %>% 
+                 filter(age<21.37))
+(2) model_nu_adult <- lm(negurg ~ severity, data = grand_diva %>% 
+                 filter(age>=21.37))
+summary(model_nu_adult)
+
+(3) model_pu_adol <- lm(posurg ~ severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(model_pu_adol)
+
+(4) model_pu_adult <- lm(posurg ~ severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(model_pu_adult)
+
+```{r}
+#template : df_pred <- ggpredict(df, terms = "x of the lm")
+
+pred_adol_severity_nu <- ggpredict(model_nu_adol, terms = "severity")
+pred_adult_severity_nu <- ggpredict(model_nu_adult, terms = "severity[0:84]")
+
+pred_adol_severity_pu <- ggpredict(model_pu_adol, terms = "severity")
+pred_adult_severity_pu <- ggpredict(model_pu_adult, terms = "severity[0:84]")
+
+
+```
+
+##adding common columns
+adding age_group (Adolescent, Adult) 
+adding upps_urg (Negative Urgency, Positive Urgency)
+
+```{r}
+pred_adol_severity_nu <- pred_adol_severity_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+pred_adult_severity_nu <- pred_adult_severity_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+pred_adol_severity_pu <- pred_adol_severity_pu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Positive Urgency")
+  
+pred_adult_severity_pu <- pred_adult_severity_pu  %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Positive Urgency")
+  
+```
+
+##row bind 
+
+```{r}
+pred_severity_urgency <- rbind(pred_adol_severity_nu,pred_adult_severity_nu, 
+                     pred_adol_severity_pu, pred_adult_severity_pu)
+```
+
+##plot
+
+```{r}
+#didn't do this one becuase of color scheme 
+# ggplot(pred_severity_urgency, aes(x = x, y = predicted, 
+#                                   color = upps_urg, linetype = age_group)) +
+#   geom_line(size = .8) +
+#   labs(
+#     x = "Stress Severity",
+#     y = "UPPS Variable",
+#     linetype = "Age Group",
+#     color = "Urgency Type"
+#   ) +
+#   guides(
+#     color = guide_legend(order = 1),
+#     linetype = guide_legend(order = 2)
+#   ) +
+#   theme_modern()
+#i used this one 
+ggplot(pred_severity_urgency, aes(x = x, y = predicted, 
+                                  color = upps_urg, linetype = age_group)) +
+  geom_line(size = .8) +
+  scale_color_manual(
+    values = c("Negative Urgency" = "#00BA38",  # green
+               "Positive Urgency" = "#00BFC4"), # blue
+    name = "Urgency Type"
+  ) +
+  labs(
+    x = "Cumulative Stress Severity",
+    y = "Urgency Score",
+    linetype = "Age Group"
+  ) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  ) +
+  theme_modern() + theme(legend.position = "none")
+
+
+```
+
+color investigation lol dafuq sorry i mixed up blue AND TEAL?!?! 
+```{r}
+p <- ggplot(df_pred_all, aes(x = x, y = predicted, color = upps_var)) +
+  geom_line()
+
+# Extract the color mapping
+ggplot_build(p)$data[[1]]$colour
+```
+
+#figure 4b: legal ~ subscales
+##model predications 
+including sum_tot, negurg, posurg
+lms: 
+(1) legal_severity_adol
+(2) legal_severity_adult
+(3) legal_severity_adol_nu
+(4) legal_severity_adult_nu
+(5) legal_severity_adol_pu
+(6) legal_severity_adult_pu
+```{r}
+#total impulsivity
+pred_legal_severity_adol <- ggpredict(legal_severity_adol, terms = "legal_severity")
+pred_legal_severity_adult <- ggpredict(legal_severity_adult, terms = "legal_severity[0:10]")
+#negative urgency
+pred_legal_severity_adol_nu <- ggpredict(legal_severity_adol_nu, 
+                                         terms = "legal_severity")
+pred_legal_severity_adult_nu <- ggpredict(legal_severity_adult_nu, 
+                                          terms = "legal_severity[0:10]")
+#positive urgency 
+pred_legal_severity_adol_pu <- ggpredict(legal_severity_adol_pu, terms = "legal_severity")
+pred_legal_severity_adult_pu <- ggpredict(legal_severity_adult_pu, terms = "legal_severity[0:10]")
+```
+
+##adding common columns 
+adding age_group (Adolescent/Adult) 
+adding upps_var (Total Impulsivity, Negative Urgency, Positive Urgency)
+```{r}
+#total impulsivity 
+pred_legal_severity_adol <- pred_legal_severity_adol %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Total Impulsivity")
+pred_legal_severity_adult <- pred_legal_severity_adult %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Total Impulsivity")
+#negative urgency 
+pred_legal_severity_adol_nu <- pred_legal_severity_adol_nu %>%
+  as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Negative Urgency")
+pred_legal_severity_adult_nu <- pred_legal_severity_adult_nu %>%
+  as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Negative Urgency")
+#positive urgency 
+pred_legal_severity_adol_pu <- pred_legal_severity_adol_pu %>%
+  as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Positive Urgency")
+pred_legal_severity_adult_pu <- pred_legal_severity_adult_pu %>%
+  as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Positive Urgency")
+```
+##rbind
+```{r}
+pred_legal_subscales <- rbind(pred_legal_severity_adol,pred_legal_severity_adult, 
+                              pred_legal_severity_adol_nu, pred_legal_severity_adult_nu, 
+                              pred_legal_severity_adol_pu,pred_legal_severity_adult_pu)
+```
+##plot
+```{r}
+ggplot(pred_legal_subscales, aes(x = x, y = predicted, 
+                                  color = upps_urg, linetype = age_group)) +
+  geom_line(size = .8) +
+  scale_color_manual(
+    values = c("Total Impulsivity" = "#F564E3",
+               "Negative Urgency" = "#00BA38",  # green
+               "Positive Urgency" = "#00BFC4"), # blue
+    name = "Urgency Type"
+  ) +
+  labs(
+    x = "Legal Related Stress",
+    y = "Urgency Score",
+    linetype = "Age Group"
+  ) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  ) +
+  theme_modern() + theme(legend.position = "none")
+```
+
+#figure 4c: danger ~ subscales 
+##model predictons 
+lms: 
+(1) danger_severity_adol
+(2) danger_severity_adult
+(3) danger_severity_adol_nu
+(4) danger_severity_adult_nu
+(5) danger_severity_adol_pu
+(6) danger_severity_adult_pu
+
+```{r}
+#total impulsivity
+pred_danger_severity_adol <- ggpredict(danger_severity_adol, 
+                                       terms = "danger_severity")
+pred_danger_severity_adult <- ggpredict(danger_severity_adult,
+                                        terms = "danger_severity")
+#negative urgency 
+pred_danger_severity_adol_nu <- ggpredict(danger_severity_adol_nu, 
+                                          terms = "danger_severity")
+pred_danger_severity_adult_nu <- ggpredict(danger_severity_adult_nu, 
+                                          terms = "danger_severity")
+#positive urgency 
+pred_danger_severity_adol_pu <- ggpredict(danger_severity_adol_pu, 
+                                          terms = "danger_severity")
+pred_danger_severity_adult_pu <- ggpredict(danger_severity_adult_pu, 
+                                          terms = "danger_severity")
+```
+
+##adding column names 
+```{r}
+#total impulsivity
+
+pred_danger_severity_adol <- pred_danger_severity_adol %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Total Impulsivity")
+
+pred_danger_severity_adult <- pred_danger_severity_adult %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Total Impulsivity")
+
+#negative urgency
+
+pred_danger_severity_adol_nu <- pred_danger_severity_adol_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+pred_danger_severity_adult_nu <- pred_danger_severity_adult_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+#positive urgency 
+
+pred_danger_severity_adol_pu <- pred_danger_severity_adol_pu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Positive Urgency")
+
+pred_danger_severity_adult_pu <- pred_danger_severity_adult_pu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Positive Urgency")
+
+```
+
+##rbind
+
+```{r}
+pred_danger_subscales <- rbind(pred_danger_severity_adol,
+                               pred_danger_severity_adult,
+                               pred_danger_severity_adol_nu,
+                               pred_danger_severity_adult_nu, 
+                               pred_danger_severity_adol_pu, 
+                               pred_danger_severity_adult_pu)
+```
+
+##plot
+```{r}
+ggplot(pred_danger_subscales, aes(x = x, y = predicted, 
+                                  color = upps_urg, linetype = age_group)) +
+  geom_line(size = .8) +
+  scale_color_manual(
+    values = c("Total Impulsivity" = "#F564E3",
+               "Negative Urgency" = "#00BA38",  # green
+               "Positive Urgency" = "#00BFC4"), # blue
+    name = "Urgency Type"
+  ) +
+  labs(
+    x = "Physical Danger Related Stress",
+    y = "Urgency Score",
+    linetype = "Age Group"
+  ) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  ) +
+  theme_modern() + theme(legend.position = "none")
+```
+
+#figure 4d: life_threat ~ subscales 
+##model prediction
+lms: 
+(1) life_threat_severity_adol
+(2) life_threat_severity_adult
+(3) life_threat_severity_adol_nu
+(4) life_threat_severity_adult_nu
+(5) life_threat_severity_adol_pu
+(6) life_threat_severity_adult_pu
+```{r}
+pred_life_threat_severity_adol <- ggpredict(life_threat_severity_adol, 
+                                       terms = "life_threat_severity")
+pred_life_threat_severity_adult <- ggpredict(life_threat_severity_adult,
+                                        terms = "life_threat_severity")
+#negative urgency 
+pred_life_threat_severity_adol_nu <- ggpredict(life_threat_severity_adol_nu, 
+                                          terms = "life_threat_severity")
+pred_life_threat_severity_adult_nu <- ggpredict(life_threat_severity_adult_nu, 
+                                          terms = "life_threat_severity")
+#positive urgency 
+pred_life_threat_severity_adol_pu <- ggpredict(life_threat_severity_adol_pu, 
+                                          terms = "life_threat_severity")
+pred_life_threat_severity_adult_pu <- ggpredict(life_threat_severity_adult_pu, 
+                                          terms = "life_threat_severity")
+```
+
+
+##adding common columns 
+the usual 
+```{r}
+#total impulsivity
+
+pred_life_threat_severity_adol <- pred_life_threat_severity_adol %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Total Impulsivity")
+
+pred_life_threat_severity_adult <- pred_life_threat_severity_adult %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Total Impulsivity")
+
+#negative urgency
+
+pred_life_threat_severity_adol_nu <- pred_life_threat_severity_adol_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+pred_life_threat_severity_adult_nu <- pred_life_threat_severity_adult_nu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Negative Urgency")
+
+#positive urgency 
+
+pred_life_threat_severity_adol_pu <- pred_life_threat_severity_adol_pu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adolescent") %>%
+  mutate(upps_urg = "Positive Urgency")
+
+pred_life_threat_severity_adult_pu <- pred_life_threat_severity_adult_pu %>%
+   as_tibble() %>% 
+  mutate(age_group = "Adult") %>%
+  mutate(upps_urg = "Positive Urgency")
+
+```
+
+##rbind
+```{r}
+pred_life_threat_subscales <- rbind(pred_life_threat_severity_adol, 
+                                    pred_life_threat_severity_adult,
+                                    pred_life_threat_severity_adol_nu, 
+                                    pred_life_threat_severity_adult_nu, 
+                                    pred_life_threat_severity_adol_pu, 
+                                    pred_life_threat_severity_adult_pu)
+```
+
+##plot
+```{r}
+ggplot(pred_life_threat_subscales, aes(x = x, y = predicted, 
+                                  color = upps_urg, linetype = age_group)) +
+  geom_line(size = .8) +
+  scale_color_manual(
+    values = c("Total Impulsivity" = "#F564E3",
+               "Negative Urgency" = "#00BA38",  # green
+               "Positive Urgency" = "#00BFC4"), # blue
+    name = "Urgency Type"
+  ) +
+  labs(
+    x = "Life Threatening Related Stress",
+    y = "Urgency Score",
+    linetype = "Age Group"
+  ) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  ) +
+  theme_modern() + theme(legend.position = "none")
+```
+
+changing mixed to More than 1 in demographic race information
+i don't like this - doing it in google docs 
+```{r}
+vars <- c("sex", "race", "ethnicity")
+install.packages("tableone")
+library(tableone)
+# Create Table 1
+table1 <- CreateTableOne(vars = vars, data = grand_diva)
+
+# Print it
+print(table1, showAllLevels = TRUE)
+```
+
+
+
