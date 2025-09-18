@@ -1,0 +1,1355 @@
+---
+title: "pitty_severity"
+output: html_document
+date: "2025-05-12"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+need to tell r what house we are going to and what tools we need 
+```{r}
+setwd("/Users/piyaverma/Downloads/R") 
+library("psych")
+library("dplyr")
+```
+
+#read in 
+need to read in grand_diva first 
+
+```{r}
+read.csv("grand_diva.csv")
+```
+
+#UPPS~AGE+STUDY
+consistently decreases with age with a steeper slope in the 7t study 
+* are identical reflection of summary, not accounting for multiple comparison
+
+#sum_tot~age+study
+0.0428 * (age)
+```{r}
+sum_tot_age <- lm(sum_tot ~ age + study,  
+                             data = grand_diva) 
+summary(sum_tot_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = sum_tot, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+#negurg~age+study
+0.0800 (age) / 0.0344 (study)
+```{r}
+negurg_age <- lm(negurg ~ age + study,  
+                             data = grand_diva) 
+summary(negurg_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = negurg, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+
+#pre~age+study
+0.00687 ** (age) 
+```{r}
+pre_age <- lm(pre ~ age + study,  
+                             data = grand_diva) 
+summary(pre_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = pre, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+
+#pers~age+study
+0.00236 **  (age)
+```{r}
+pers_age <- lm(pers ~ age + study,  
+                             data = grand_diva) 
+summary(pers_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = pers, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+
+#ss~age+study
+0.981  (age)
+
+```{r}
+ss_age <- lm(ss ~ age + study,  
+                             data = grand_diva) 
+summary(ss_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = ss, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+
+#posurg~age+study
+0.7194 (age)
+```{r}
+posurg_age <- lm(posurg ~ age + study,  
+                             data = grand_diva) 
+summary(posurg_age)
+
+## upps and age by study 
+ggplot(data = grand_diva, aes(x = age, y = posurg, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+--------------------------------------------------------------------------------
+
+removing reproduction from grand_diva because it's on crack (the one that's in pitty_cleaning has reproduction as of 5/20 - need to remove it and rewrite it out)
+
+```{r}
+grand_diva <- grand_diva %>% select(-c(reproduction_severity, reproduction_count))
+```
+
+--------------------------------------------------------------------------------
+
+#SEVERITY~AGE+STUDY
+0.00319 ** (intercept...)?
+```{r}
+severity_age <- lm(severity~ age + study,  
+                             data = grand_diva) 
+summary(severity_age)
+```
+
+--------------------------------------------------------------------------------
+
+#UPPS~SEVERITY+AGE+STUDY
+going through each domain of stress severity with total upps and each of its subscales 
+controlling for age and study (main effect)
+controlling for study too as per Finn's advice
+multiple comparison of 15 domains so p<0.003
+
+intercept is upps variable and first decimal is the stress component, second decimal is age
+
+#plot template
+```{r}
+ggplot(data = grand_diva, aes(x = domain, y = upps, 
+                                        color = factor(study))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Study Group") +
+  theme_minimal()
+```
+
+#housing~upps+age
+(me stands for main effect indicating i am controlling for things)
+
+housing_sumtot_me
+0.0598 . / 0.0353 *
+```{r}
+housing_sumtot_me <- lm(sum_tot ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_sumtot_me)
+
+```
+
+housing_negurg_me
+0.0469 *  / 0.0666 
+```{r}
+housing_negurg_me <- lm(negurg ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_negurg_me)
+```
+
+housing_pre_me
+0.9705 / 0.0071 ** 
+```{r}
+housing_pre_me <- lm(pre ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_pre_me)
+```
+
+housing_pers_me
+0.25636 / 0.00207 ** 
+```{r}
+housing_pers_me <- lm(pers ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_pers_me)
+```
+
+housing_ss_me
+0.315 / 0.953 
+```{r}
+housing_ss_me <- lm(ss ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_ss_me)
+```
+
+housing_posurg_me
+0.0378 * / 0.6631  
+```{r}
+housing_posurg_me <- lm(posurg ~ housing_severity + study + age,  
+                             data = grand_diva) 
+summary(housing_posurg_me)
+```
+
+#education~upps+age
+
+education_sumtot_me
+0.00899 ** / 0.59746 
+```{r}
+education_sumtot_me <- lm(sum_tot ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_sumtot_me)
+
+```
+
+##education_negurg_me
+0.00197 ** / 0.96081
+```{r}
+education_negurg_me <- lm(negurg ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_negurg_me)
+```
+
+education_pre_me
+0.6295  / 0.0329 *  
+```{r}
+education_pre_me <- lm(pre ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_pre_me)
+```
+
+education_pers_me
+0.172 / 0.043 *
+```{r}
+education_pers_me <- lm(pers ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_pers_me)
+```
+
+education_ss_me
+0.323 / 0.645 
+```{r}
+education_ss_me <- lm(ss ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_ss_me)
+```
+
+education_posurg_me
+0.00426 **  / 0.27735  
+```{r}
+education_posurg_me <- lm(posurg ~ education_severity + study + age,  
+                             data = grand_diva) 
+summary(education_posurg_me)
+```
+
+#work~upps+age
+
+work_sumtot_me
+0.3383 / 0.0255 *
+```{r}
+work_sumtot_me <- lm(sum_tot ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_sumtot_me)
+
+```
+
+work_negurg_me
+0.989 / 0.115  
+```{r}
+work_negurg_me <- lm(negurg ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_negurg_me)
+```
+
+work_pre_me
+0.0335 * / 0.0008 ***
+```{r}
+work_pre_me <- lm(pre ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_pre_me)
+```
+
+work_pers_me
+0.034677 *  / 0.000262 ***
+```{r}
+work_pers_me <- lm(pers ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_pers_me)
+```
+
+work_ss_me
+0.627 / 0.853 
+```{r}
+work_ss_me <- lm(ss ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_ss_me)
+```
+
+work_posurg_me
+0.6188 / 0.5921 
+```{r}
+work_posurg_me <- lm(posurg ~ work_severity + study + age,  
+                             data = grand_diva) 
+summary(work_posurg_me)
+```
+
+#health~upps+age
+
+health_sumtot_me
+0.0229 * / 0.0222 * 
+```{r}
+health_sumtot_me <- lm(sum_tot ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_sumtot_me)
+
+```
+
+health_negurg_me
+0.0184 * / 0.0430 * 
+```{r}
+health_negurg_me <- lm(negurg ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_negurg_me)
+```
+
+health_pre_me
+0.04146 * / 0.00337 ** 
+```{r}
+health_pre_me <- lm(pre ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_pre_me)
+```
+
+health_pers_me
+0.26779  / 0.00168 ** 
+```{r}
+health_pers_me <- lm(pers ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_pers_me)
+```
+
+health_ss_me
+0.213 / 0.871 
+```{r}
+health_ss_me <- lm(ss ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_ss_me)
+```
+
+health_posurg_me
+0.3327 / 0.6425 
+```{r}
+health_posurg_me <- lm(posurg ~ health_severity + study + age,  
+                             data = grand_diva) 
+summary(health_posurg_me)
+```
+
+#marital~upps+age
+
+marital_sumtot_me
+0.109 / 0.016 *
+```{r}
+marital_sumtot_me <- lm(sum_tot ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_sumtot_me)
+
+```
+
+marital_negurg_me
+0.2260 / 0.0427 *
+```{r}
+marital_negurg_me <- lm(negurg ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_negurg_me)
+```
+
+marital_pre_me
+0.5823 / 0.0062 **
+```{r}
+marital_pre_me <- lm(pre ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_pre_me)
+```
+
+marital_pers_me
+0.149179  / 0.000881 ***
+```{r}
+marital_pers_me <- lm(pers ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_pers_me)
+```
+
+marital_ss_me
+0.280 / 0.733
+```{r}
+marital_ss_me <- lm(ss ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_ss_me)
+```
+
+marital_posurg_me
+0.2977 / 0.5161
+```{r}
+marital_posurg_me <- lm(posurg ~ marital_severity + study + age,  
+                             data = grand_diva) 
+summary(marital_posurg_me)
+```
+
+#financial~upps+age
+financial_sumtot_me
+0.0372 *  / 0.0162 *
+```{r}
+financial_sumtot_me <- lm(sum_tot ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_sumtot_me)
+
+```
+
+financial_negurg_me
+0.0682 / 0.0376 * 
+```{r}
+financial_negurg_me <- lm(negurg ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_negurg_me)
+```
+
+financial_pre_me
+0.02134 * / 0.00181 **
+```{r}
+financial_pre_me <- lm(pre ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_pre_me)
+```
+
+##financial_pers_me
+0.002830 **  / 0.000301 ***
+```{r}
+financial_pers_me <- lm(pers ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_pers_me)
+```
+
+financial_ss_me
+0.501  / 0.878
+```{r}
+financial_ss_me <- lm(ss ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_ss_me)
+```
+
+financial_posurg_me
+0.9743  / 0.7300  
+```{r}
+financial_posurg_me <- lm(posurg ~ financial_severity + study + age,  
+                             data = grand_diva) 
+summary(financial_posurg_me)
+```
+
+#legal~upps+age
+legal_sumtot_me
+0.00639 ** / 0.15710 
+```{r}
+legal_sumtot_me <- lm(sum_tot ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_sumtot_me)
+
+```
+
+legal_negurg_me
+0.00493 ** / 0.26173
+```{r}
+legal_negurg_me <- lm(negurg ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_negurg_me)
+```
+
+legal_pre_me
+0.3762 / 0.0144 *
+```{r}
+legal_pre_me <- lm(pre ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_pre_me)
+```
+
+legal_pers_me
+0.12513 / 0.00798 ** 
+```{r}
+legal_pers_me <- lm(pers ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_pers_me)
+```
+
+legal_ss_me
+0.595 / 0.925
+```{r}
+legal_ss_me <- lm(ss ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_ss_me)
+```
+
+##legal_posurg_me
+0.000188 *** / 0.632577  
+```{r}
+legal_posurg_me <- lm(posurg ~ legal_severity + study + age,  
+                             data = grand_diva) 
+summary(legal_posurg_me)
+```
+
+#other_relations~upps+age
+other_relations_sumtot_me
+0.3868  / 0.0311 * 
+```{r}
+other_relations_sumtot_me <- lm(sum_tot ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_sumtot_me)
+
+```
+
+other_relations_negurg_me
+0.1640   / 0.0453 *
+```{r}
+other_relations_negurg_me <- lm(negurg ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_negurg_me)
+```
+
+other_relations_pre_me
+0.7229 /  0.0102 * 
+```{r}
+other_relations_pre_me <- lm(pre ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_pre_me)
+```
+
+other_relations_pers_me
+0.39632 / 0.00167 ** 
+```{r}
+other_relations_pers_me <- lm(pers ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_pers_me)
+```
+
+other_relations_ss_me
+0.978 / 0.986
+```{r}
+other_relations_ss_me <- lm(ss ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_ss_me)
+```
+
+other_relations_posurg_me
+0.2252 / 0.5467
+```{r}
+other_relations_posurg_me <- lm(posurg ~ other_relations_severity + study + age,  
+                             data = grand_diva) 
+summary(other_relations_posurg_me)
+```
+
+#death~upps+age
+death_sumtot_me
+0.2578 / 0.0485 *
+```{r}
+death_sumtot_me <- lm(sum_tot ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_sumtot_me)
+
+```
+
+death_negurg_me
+0.0523 / 0.0942
+```{r}
+death_negurg_me <- lm(negurg ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_negurg_me)
+```
+
+death_pre_me
+0.6605 /  0.0075 
+```{r}
+death_pre_me <- lm(pre ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_pre_me)
+```
+
+death_pers_me
+0.92362 / 0.00242 
+```{r}
+death_pers_me <- lm(pers ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_pers_me)
+```
+
+death_ss_me
+0.443 / 0.990
+```{r}
+death_ss_me <- lm(ss ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_ss_me)
+```
+
+death_posurg_me
+0.5963  / 0.7390
+```{r}
+death_posurg_me <- lm(posurg ~ death_severity + study + age,  
+                             data = grand_diva) 
+summary(death_posurg_me)
+```
+
+#life_threat~upps+age
+life_threat_sumtot_me
+0.0365 * / 0.0129 * 
+```{r}
+life_threat_sumtot_me <- lm(sum_tot ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_sumtot_me)
+
+```
+
+life_threat_negurg_me
+0.1842 / 0.0432 *
+```{r}
+life_threat_negurg_me <- lm(negurg ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_negurg_me)
+```
+
+life_threat_pre_me
+0.31887 / 0.00426 **
+```{r}
+life_threat_pre_me <- lm(pre ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_pre_me)
+```
+
+life_threat_pers_me
+0.58863 / 0.00213 **
+```{r}
+life_threat_pers_me <- lm(pers ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_pers_me)
+```
+
+life_threat_ss_me
+0.0229 * / 0.5593
+```{r}
+life_threat_ss_me <- lm(ss ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_ss_me)
+```
+
+life_threat_posurg_me
+0.2249 / 0.5184
+```{r}
+life_threat_posurg_me <- lm(posurg ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(life_threat_posurg_me)
+```
+
+#iploss~upps+age
+iploss_sumtot_me
+0.0653 / 0.0411
+```{r}
+iploss_sumtot_me <- lm(sum_tot ~ interpersonal_loss_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_sumtot_me)
+
+```
+
+iploss_negurg_me
+0.1842 / 0.0432
+```{r}
+iploss_negurg_me <- lm(negurg ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_negurg_me)
+```
+
+iploss_pre_me
+0.31887 / 0.00426
+```{r}
+iploss_pre_me <- lm(pre ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_pre_me)
+```
+
+iploss_pers_me
+0.58863 / 0.00213
+```{r}
+iploss_pers_me <- lm(pers ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_pers_me)
+```
+
+iploss_ss_me
+0.0229 / 0.5593
+```{r}
+iploss_ss_me <- lm(ss ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_ss_me)
+```
+
+iploss_posurg_me
+0.2249 / 0.5184
+```{r}
+iploss_posurg_me <- lm(posurg ~ life_threat_severity + study + age,  
+                             data = grand_diva) 
+summary(iploss_posurg_me)
+```
+
+#danger~upps+age
+danger_sumtot_me
+0.0103 / 0.0254
+```{r}
+danger_sumtot_me <- lm(sum_tot ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_sumtot_me)
+
+```
+
+danger_negurg_me
+0.00701 / 0.04876
+```{r}
+danger_negurg_me <- lm(negurg ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_negurg_me)
+```
+
+danger_pre_me
+0.22904 / 0.00539
+```{r}
+danger_pre_me <- lm(pre ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_pre_me)
+```
+
+danger_pers_me
+0.387 / 0.002 
+```{r}
+danger_pers_me <- lm(pers ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_pers_me)
+```
+
+danger_ss_me
+0.0931 / 0.8860
+```{r}
+danger_ss_me <- lm(ss ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_ss_me)
+```
+
+danger_posurg_me
+0.0601 / 0.6206
+```{r}
+danger_posurg_me <- lm(posurg ~ danger_severity + study + age,  
+                             data = grand_diva) 
+summary(danger_posurg_me)
+```
+
+#humiliation~upps+age
+
+humiliation_sumtot_me
+0.00984 / 0.02122
+```{r}
+humiliation_sumtot_me <- lm(sum_tot ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_sumtot_me)
+
+```
+
+humiliation_negurg_me
+0.0307 / 0.0483
+```{r}
+humiliation_negurg_me <- lm(negurg ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_negurg_me)
+```
+
+humiliation_pre_me
+0.84671 / 0.00773
+```{r}
+humiliation_pre_me <- lm(pre ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_pre_me)
+```
+
+humiliation_pers_me
+0.02149 / 0.00102
+```{r}
+humiliation_pers_me <- lm(pers ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_pers_me)
+```
+
+humiliation_ss_me
+0.376 / 0.911
+```{r}
+humiliation_ss_me <- lm(ss ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_ss_me)
+```
+
+##humiliation_posurg_me
+0.000256 / 0.458406
+```{r}
+humiliation_posurg_me <- lm(posurg ~ humiliation_severity + study + age,  
+                             data = grand_diva) 
+summary(humiliation_posurg_me)
+```
+
+
+#entrapment~upps+age
+
+entrapment_sumtot_me
+0.00575 / 0.09457
+```{r}
+entrapment_sumtot_me <- lm(sum_tot ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_sumtot_me)
+
+```
+
+##entrapment_negurg_me
+0.00243 / 0.17289
+```{r}
+entrapment_negurg_me <- lm(negurg ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_negurg_me)
+```
+
+entrapment_pre_me
+0.0146 / 0.0167
+```{r}
+entrapment_pre_me <- lm(pre ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_pre_me)
+```
+
+entrapment_pers_me
+0.0132 / 0.0063
+```{r}
+entrapment_pers_me <- lm(pers ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_pers_me)
+```
+
+entrapment_ss_me
+0.560 / 0.955
+```{r}
+entrapment_ss_me <- lm(ss ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_ss_me)
+```
+
+entrapment_posurg_me
+0.1446 / 0.8754
+```{r}
+entrapment_posurg_me <- lm(posurg ~ entrapment_severity + study + age,  
+                             data = grand_diva) 
+summary(entrapment_posurg_me)
+```
+
+#role_change~upps+age
+role_change_sumtot_me
+0.00677 / 0.01227 
+```{r}
+role_change_sumtot_me <- lm(sum_tot ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_sumtot_me)
+
+```
+
+role_change_negurg_me
+0.0109 / 0.0280
+```{r}
+role_change_negurg_me <- lm(negurg ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_negurg_me)
+```
+
+role_change_pre_me
+0.28550 / 0.00444
+```{r}
+role_change_pre_me <- lm(pre ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_pre_me)
+```
+
+role_change_pers_me
+0.14597 / 0.00115
+```{r}
+role_change_pers_me <- lm(pers ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_pers_me)
+```
+
+role_change_ss_me
+0.189 / 0.799
+```{r}
+role_change_ss_me <- lm(ss ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_ss_me)
+```
+
+role_change_posurg_me
+0.00762 / 0.40378
+```{r}
+role_change_posurg_me <- lm(posurg ~ role_change_severity + study + age,  
+                             data = grand_diva) 
+summary(role_change_posurg_me)
+```
+
+--------------------------------------------------------------------------------
+#age group column
+adding age group column to grand diva -- to visualize age interaction / plots 
+```{r}
+grand_diva <- grand_diva %>%
+  mutate(age_class = ifelse(age < 18, "adolescent", "adult"))
+```
+
+#upps~severity*age_class
+^^ the relationship between stress and impulsivity is significantly stronger in adolescents than in adults
+```{r}
+sumtot_severity_ageclass <- lm(sum_tot~severity*age_class, data = grand_diva)
+summary(sumtot_severity_ageclass)
+
+ggplot(data = grand_diva, aes(x = severity, y = sum_tot, 
+                                        color = factor(age_class))) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(color = "Age Class") +
+  theme_minimal()
+```
+
+--------------------------------------------------------------------------------
+ 
+#JOHNSON-NEYMAN (SEVERITY)
+attemping johnson neyman plot , can't use model_ageclass because won't work on a factor. needs a numeric and continous variable like age which i have so woohoo science 
+```{r}
+install.packages("interactions")
+library(interactions)
+#creating model_age to input into johnson neyman code / the relationship between impulsivity and stress testing for age interaction which comes out significant , model_agegroup specifies it is significant in adolescents not adults 
+
+sum_tot_severity_age <- lm(sum_tot ~ severity * age, data = grand_diva)
+summary(sum_tot_severity_age)
+
+
+#johnson neyman code , thank you chatty
+johnson_neyman(sum_tot_severity_age, pred = "severity", modx = "age")
+
+#im curious
+sim_slopes(sum_tot_severity_age, pred = "severity", modx = "age")
+```
+
+#HIGH VS LOW CLS (SEVERITY)
+creating high cls and low cls (cumulative life stress ) with plot and result
+
+```{r}
+grand_diva <- grand_diva %>% mutate(cls_group = ifelse(severity > median(grand_diva$severity), 'High CLS', 'Low CLS'))
+
+ggplot(data = grand_diva, aes(x = age, y = sum_tot, 
+                                        color = factor(cls_group))) + 
+  geom_point() + 
+  geom_smooth(method = "gam", se = FALSE) +
+  labs(color = "CLS Group") +
+  theme_minimal()
+# higher impulsivity in adolescence is being driven by high cumulative life stress compared to low cls 
+
+model_cls <- lm(sum_tot~severity* cls_group, data = grand_diva)
+summary(model_cls) #using severity and cls group is redundant and i'm taking it out of the abstract dump
+```
+
+--------------------------------------------------------------------------------
+
+
+subscales of upps~severity %>% filtering age 21.37 based on johnson neyman 
+
+#SUBSCALES JN AGE FILTER (SEVERITY)
+negative urgency ~ severity (21 age filter)
+```{r}
+#under 21
+model_nu_adol <- lm(negurg ~ severity, data = grand_diva %>% 
+                 filter(age<21.37))
+summary(model_nu_adol)
+#21 and over 
+model_nu_adult <- lm(negurg ~ severity, data = grand_diva %>% 
+                 filter(age>=21.37))
+summary(model_nu_adult)
+
+#visualization 
+#adding jn_age as column to filter people based on age 21 (johnson neyman age)
+
+grand_diva <- grand_diva %>%
+  mutate(jn_age = case_when(
+    age < 21.37 ~ "Adolescent",
+    age >= 21.37 ~ "Adult"
+  ))
+
+ggplot(grand_diva, aes(x = severity, y = negurg, color = jn_age)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Severity Predicting Negative Urgency by Age Group",
+    x = "Severity",
+    y = "Negative Urgency",
+    color = "Age Group"
+  ) +
+  theme_minimal()
+
+```
+
+premeditation ~ severity (21 age filter)
+```{r}
+#under 21 
+model_pre_adol <- lm(pre ~ severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(model_pre_adol)
+#over 21
+model_pre_adult <- lm(pre ~ severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(model_pre_adult)
+#visualizing 
+ggplot(grand_diva, aes(x = severity, y = pre, color = jn_age)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Severity Predicting Lack of Premeditation  by Age Group",
+    x = "Severity",
+    y = "Premeditation",
+    color = "Age Group"
+  ) +
+  theme_minimal()
+```
+
+perserverance ~ severity (21 age filter)
+```{r}
+#under 21 
+model_pers_adol <- lm(pers ~ severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(model_pers_adol)
+#over 21
+model_pers_adult <- lm(pers ~ severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(model_pers_adult)
+#visualizing 
+ggplot(grand_diva, aes(x = severity, y = pers, color = jn_age)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Severity Predicting Lack of Perseverance  by Age Group",
+    x = "Severity",
+    y = "Perseverance",
+    color = "Age Group"
+  ) +
+  theme_minimal()
+
+```
+
+sensation seeking ~ severity (21 age filter)
+```{r}
+#under 21 
+model_ss_adol <- lm(ss ~ severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(model_ss_adol)
+#over 21
+model_ss_adult <- lm(ss ~ severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(model_ss_adult)
+#visualizing 
+ggplot(grand_diva, aes(x = severity, y = ss, color = jn_age)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Severity Predicting Sensation Seeking by Age Group",
+    x = "Severity",
+    y = "Sensation Seeking",
+    color = "Age Group"
+  ) +
+  theme_minimal()
+```
+
+positive urgency ~ severity (21 age filter)
+```{r}
+#under 21 
+model_pu_adol <- lm(posurg ~ severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(model_pu_adol)
+#over 21
+model_pu_adult <- lm(posurg ~ severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(model_pu_adult)
+#visualizing 
+ggplot(grand_diva, aes(x = severity, y = posurg, color = jn_age)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Severity Predicting Positve Urgency by Age Group",
+    x = "Severity",
+    y = "Positive Urgency",
+    color = "Age Group"
+  ) +
+  theme_minimal()
+```
+
+--------------------------------------------------------------------------------
+
+#DOMAINS~UPPS JN AGE FILTER (_SEVERITY)
+
+housing, education, work, health, marital, financial, legal, other_relations, 
+death, life_threat, interpersonal_loss, danger, humiliation, entrapment, 
+role_change (15)
+(sum tot, filter age 21)
+
+housing -- (0.05 , .005 in adol) / (-0.005, 0.8 in adults)
+```{r}
+#under 21
+housing_severity_adol <- lm(sum_tot ~ housing_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(housing_severity_adol)
+#over 21
+housing_severity_adult <- lm(sum_tot ~ housing_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(housing_severity_adult)
+```
+
+work -- (-0.06, 0.0892 in adol) / (0.04, 0.02 in adult)
+```{r}
+#under 21
+work_severity_adol <- lm(sum_tot ~ work_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(work_severity_adol)
+#over 21
+work_severity_adult <- lm(sum_tot ~ work_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(work_severity_adult)
+```
+
+health -- (0.02, 0.007 in adol) / (0.001, 0.9 in adults)
+
+```{r}
+#under 21
+health_severity_adol <- lm(sum_tot ~ health_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(health_severity_adol)
+#over 21
+health_severity_adult <- lm(sum_tot ~ health_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(health_severity_adult)
+```
+
+marital -- (0.02 , 0.06 in adol) / (-0.0001, 0.987 in adults)
+```{r}
+#under 21
+marital_severity_adol <- lm(sum_tot ~ marital_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(marital_severity_adol)
+#over 21
+marital_severity_adult <- lm(sum_tot ~ marital_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(marital_severity_adult)
+```
+
+financial -- (0.02 , 0.27 in adol) / (0.04, 0.04 in adults)
+```{r}
+#under 21
+financial_severity_adol <- lm(sum_tot ~ financial_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(financial_severity_adol)
+#over 21
+financial_severity_adult <- lm(sum_tot ~ financial_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(financial_severity_adult)
+```
+
+##legal -- siggy
+(0.05, 0.003 in adol) / (0.008, 0.9 in adults)
+```{r}
+#under 21
+legal_severity_adol <- lm(sum_tot ~ legal_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(legal_severity_adol)
+#over 21
+legal_severity_adult <- lm(sum_tot ~ legal_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(legal_severity_adult)
+```
+
+other_relations -- (0.02, 0.01 in adol) / (-.007, 0.3 in adults)
+```{r}
+#under 21
+other_relations_severity_adol <- lm(sum_tot ~ other_relations_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(other_relations_severity_adol)
+#over 21
+other_relations_severity_adult <- lm(sum_tot ~ other_relations_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(other_relations_severity_adult)
+```
+
+death -- (0.009, 0.4 in adol) / (-0.0002 , 0.9 in adults)
+```{r} 
+#under 21
+death_severity_adol <- lm(sum_tot ~ death_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(death_severity_adol)
+#over 21
+death_severity_adult <- lm(sum_tot ~ death_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(death_severity_adult)
+```
+
+##life_threat -- siggy 
+(0.04, 0.003 in adol) / (-0.001, 0.9 in adults)
+so close to being significant but not close enough
+```{r}
+#under 21
+life_threat_severity_adol <- lm(sum_tot ~ life_threat_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(life_threat_severity_adol)
+#over 21
+life_threat_severity_adult <- lm(sum_tot ~ life_threat_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(life_threat_severity_adult)
+```
+
+
+interpersonal_loss -- (0.01, 0.02 in adol) / (-0.005, 0.5 in adults)
+```{r}
+#under 21
+iploss_severity_adol <- lm(sum_tot ~ interpersonal_loss_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(iploss_severity_adol)
+#over 21
+iploss_severity_adult <- lm(sum_tot ~ interpersonal_loss_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(iploss_severity_adult)
+```
+
+##danger -- very siggy
+(0.02, 0.0008 in adol) / (-0.002, 0.97 in adults)
+```{r}
+#under 21
+danger_severity_adol <- lm(sum_tot ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol)
+#over 21
+danger_severity_adult <- lm(sum_tot ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult)
+```
+
+##humiliation -- almost siggy 
+(0.02, 0.004 in adol) / (0.006, 0.5 in adults) 
+```{r}
+#under 21
+humiliation_severity_adol <- lm(sum_tot ~ humiliation_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(humiliation_severity_adol)
+#over 21
+humiliation_severity_adult <- lm(sum_tot ~ humiliation_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(humiliation_severity_adult)
+```
+
+##entrapment -- almost siggy
+(0.02, 0.008 in adol) / (0.01, 0.34 in adults)
+```{r}
+#under 21
+entrapment_severity_adol <- lm(sum_tot ~ entrapment_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(entrapment_severity_adol)
+#over 21
+entrapment_severity_adult <- lm(sum_tot ~ entrapment_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(entrapment_severity_adult)
+```
+
+#DANGER-SUBSCALES (SEVERITY)
+negative urgency
+```{r}
+#under 21
+danger_severity_adol_nu <- lm(negurg ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol_nu)
+#over 21
+danger_severity_adult_nu <- lm(negurg ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult_nu)
+```
+
+premeditation
+```{r}
+#under 21
+danger_severity_adol_pre <- lm(pre ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol_pre)
+#over 21
+danger_severity_adult_pre <- lm(pre ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult_pre)
+```
+
+perseverance
+```{r}
+#under 21
+danger_severity_adol_pers <- lm(pers ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol_pers)
+#over 21
+danger_severity_adult_pers <- lm(pers ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult_pers)
+```
+
+sensation seeking
+```{r}
+#under 21
+danger_severity_adol_ss <- lm(ss ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol_ss)
+#over 21
+danger_severity_adult_ss <- lm(ss ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult_ss)
+```
+
+positive urgency
+```{r}
+#under 21
+danger_severity_adol_pu <- lm(posurg ~ danger_severity, data = grand_diva %>%
+                       filter(age < 21.37))
+summary(danger_severity_adol_pu)
+#over 21
+danger_severity_adult_pu <- lm(posurg ~ danger_severity, data = grand_diva %>%
+                        filter(age >= 21.37))
+summary(danger_severity_adult_pu)
+```
+
+#LEGAL-SUBSCALES (SEVERITY)
+
+#LIFE_THREAT-SUBSCALES (SEVERITY)
+
