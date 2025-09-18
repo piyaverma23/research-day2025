@@ -1,0 +1,534 @@
+---
+title: "pitty_cleaning"
+output: html_document
+date: "2025-05-07"
+editor_options: 
+  chunk_output_type: console
+---
+#BEGINNING 
+setting working directory 
+getting libraries 
+house and tools 
+
+```{r setup, include=FALSE}
+
+library("psych")
+library("dplyr")
+library("readxl")
+
+setwd("/Users/piyaverma/Downloads/R") 
+
+```
+#strain_variables
+combines variables + adult_seven_strain because adult 7t strain data was missing from original strain csv file 
+includes stress as a thing now in general and for each strain domain
+transmuting to keep columns i want and rename 
+order and name of columns in both variables and adult_seven_strain should be kept the same in order for rbind to work which is why i hashtagged the sdate in adult_seven_strain out 
+```{r}
+#setwd("/Users/piyaverma/Downloads/R/LNCD_STRAIN_variables.csv") 
+variables <- read.csv("/Users/piyaverma/Downloads/R/LNCD_STRAIN_variables.csv")
+variables <- variables %>% #changing the column names and now including stress count 
+  transmute(ID, age = Age,
+            severity = StressTH, 
+            count = StressCT,
+            housing_severity = DHAllTH, 
+            housing_count = DHAllCT,
+            education_severity = DEAllTH, 
+            education_count = DEAllCT,
+            work_severity = DWAllTH, 
+            work_count = DWAllCT, 
+            health_severity = DTAllTH, 
+            health_count = DTAllCT, 
+            marital_severity = DMAllTH, 
+            marital_count = DMAllCT,
+            reproduction_severity = DRAllTH, 
+            reproduction_count= DRAllCT,
+            financial_severity = DFAllTH, 
+            financial_count = DFAllCT,
+            legal_severity = DLAllTH, 
+            legal_count = DLAllCT,
+            other_relations_severity = DOAllTH, 
+            other_relations_count = DOAllTH,
+            death_severity = DDAllTH, 
+            death_count = DDAllCT,
+            life_threat_severity = DXAllTH,
+            life_threat_count = DXAllCT,
+            interpersonal_loss_severity = CIAllTH, 
+            interpersonal_loss_count = CIAllCT,
+            danger_severity = CDAllTH, 
+            danger_count = CDAllCT,
+            humiliation_severity = CHAllTH, 
+            humiliation_count = CHAllCT, 
+            entrapment_severity = CEAllTH, 
+            entrapment_count = CEAllCT,
+            role_change_severity = CRAllTH,
+            role_change_count = CRAllCT)
+            
+adult_seven_strain <- read.csv("/Users/piyaverma/Downloads/R/adult_seven_strain.csv")
+#keeping one version known as adult_seven_strain_sdate with the day they completed the strain and adult_seven_strain without it for rbind to work with variables
+adult_seven_strain_sdate <- adult_seven_strain%>% #changing column names to now include stress count. all column names should be the same for rbind to work 
+  transmute(ID, age = Age,sdate = as.Date(DateComp),
+            severity = StressTH, 
+            count = StressCT,
+            housing_severity = DHAllTH, 
+            housing_count = DHAllCT,
+            education_severity = DEAllTH, 
+            education_count = DEAllCT,
+            work_severity = DWAllTH, 
+            work_count = DWAllCT, 
+            health_severity = DTAllTH, 
+            health_count = DTAllCT, 
+            marital_severity = DMAllTH, 
+            marital_count = DMAllCT,
+            reproduction_severity = DRAllTH, 
+            reproduction_count= DRAllCT,
+            financial_severity = DFAllTH, 
+            financial_count = DFAllCT,
+            legal_severity = DLAllTH, 
+            legal_count = DLAllCT,
+            other_relations_severity = DOAllTH, 
+            other_relations_count = DOAllTH,
+            death_severity = DDAllTH, 
+            death_count = DDAllCT,
+            life_threat_severity = DXAllTH,
+            life_threat_count = DXAllCT,
+            interpersonal_loss_severity = CIAllTH, 
+            interpersonal_loss_count = CIAllCT,
+            danger_severity = CDAllTH, 
+            danger_count = CDAllCT,
+            humiliation_severity = CHAllTH, 
+            humiliation_count = CHAllCT, 
+            entrapment_severity = CEAllTH, 
+            entrapment_count = CEAllCT,
+            role_change_severity = CRAllTH,
+            role_change_count = CRAllCT)
+adult_seven_strain <- adult_seven_strain %>% #changing column names to now include stress count. all column names should be the same for rbind to work 
+  transmute(ID, age = Age,#sdate = as.Date(DateComp),
+            severity = StressTH, 
+            count = StressCT,
+            housing_severity = DHAllTH, 
+            housing_count = DHAllCT,
+            education_severity = DEAllTH, 
+            education_count = DEAllCT,
+            work_severity = DWAllTH, 
+            work_count = DWAllCT, 
+            health_severity = DTAllTH, 
+            health_count = DTAllCT, 
+            marital_severity = DMAllTH, 
+            marital_count = DMAllCT,
+            reproduction_severity = DRAllTH, 
+            reproduction_count= DRAllCT,
+            financial_severity = DFAllTH, 
+            financial_count = DFAllCT,
+            legal_severity = DLAllTH, 
+            legal_count = DLAllCT,
+            other_relations_severity = DOAllTH, 
+            other_relations_count = DOAllTH,
+            death_severity = DDAllTH, 
+            death_count = DDAllCT,
+            life_threat_severity = DXAllTH,
+            life_threat_count = DXAllCT,
+            interpersonal_loss_severity = CIAllTH, 
+            interpersonal_loss_count = CIAllCT,
+            danger_severity = CDAllTH, 
+            danger_count = CDAllCT,
+            humiliation_severity = CHAllTH, 
+            humiliation_count = CHAllCT, 
+            entrapment_severity = CEAllTH, 
+            entrapment_count = CEAllCT,
+            role_change_severity = CRAllTH,
+            role_change_count = CRAllCT)
+
+#combining variables without adult 7t to include adult 7t strain data (260 obs)
+strain_variables <- rbind(variables,adult_seven_strain)
+#has 260 observation which includes repeat ids and dropped people 
+```
+
+#demo_habit_sdate
+has demographic information and strain date for habit specific IDs 
+but demo was still missing adult 7t subjects
+habit_sdate_nodrop removed exclusionary subjects which was used to merge with demo
+```{r}
+habit_sdate <- read_excel("/Users/piyaverma/Downloads/R/habit_flow.xlsx", sheet = "Sdate")
+habit_drop <- read_excel("/Users/piyaverma/Downloads/R/habit_flow.xlsx", sheet = "Dropped")                               
+#habit_demoxl <- read_excel("habit_flow.xlsx", sheet = "Demo")
+
+#removing dropped 
+names(habit_drop) <- c("ID", "reason")
+names(habit_sdate) <- c("ID", "date")
+habit_sdate_nodrop <- anti_join(habit_sdate, habit_drop)
+#before adding study as a column
+write.csv(habit_sdate_nodrop, "habit_sdate_nodrop_from-strain.csv")
+#transfered it to sheets, added study as a column, redownloaded it as a csv file which i'm not using below to be able to left_join next
+habit_sdate_nodrop <- read.csv("/Users/piyaverma/Downloads/R/habit_sdate_nodrop.csv")
+
+#getting in demographic information into habit_sdate_nodrop but demo has missing adult_seven_strain which i do later :) 
+
+demo <- read.csv("/Users/piyaverma/Downloads/R/demo.csv")
+demo_habit_sdate <- demo %>% 
+  left_join(habit_sdate_nodrop %>% select(ID, study, sdate), by = c("ID", "study"))
+demo_habit_sdate <- demo_habit_sdate %>% select(-ends_with("study.y"))
+
+```
+
+#demo_sdate_old
+made with seven_sdate_nodrop and demo_habit_sdate to include subjects demographic information and date of strain (sdate) for both studies (minus the people who are missing which will be tackled in another code chunk)
+was renamed _old because demo_sdate will include the missing 7t adults 
+```{r}
+seven_sdate <- read_excel("/Users/piyaverma/Downloads/R/7t_flow.xlsx", sheet = "sdate")
+seven_drop <- read_excel("/Users/piyaverma/Downloads/R/7t_flow.xlsx", sheet = "dropped")
+#removing dropped 
+names(seven_drop) <- c("ID", "reason")
+names(seven_sdate) <- c("ID", "study", "date", "agegroup" )
+seven_sdate <- seven_sdate %>%
+  mutate(study = "7T")
+seven_sdate_nodrop <- anti_join(seven_sdate, seven_drop, by = c("ID"))
+#there are no matching id's between seven_sdate and seven_drop anyways but will use seven_sdate_nodrop moving forward 
+#in 141, i got the incompatitible types for ID for integer, character so below i'm trying to fix. demo_habit_sdate ID is an integar and seven_date_nodrop ID is a character. i'm chanigng ID to be a character in demo_habit_sdate too :)  
+demo_habit_sdate <- demo_habit_sdate %>% mutate(ID = as.character(ID))
+seven_sdate_nodrop <- seven_sdate_nodrop %>% mutate(ID = as.character(ID))
+
+demo_sdate_old <- demo_habit_sdate %>% 
+  left_join(seven_sdate_nodrop %>% select(ID, study, date), by = c("ID", "study"))
+
+#joining sdate habit with sdate seven to make one sdate column and no NAs
+demo_sdate_old <- demo_sdate_old %>%
+  mutate(sdate = as.Date(sdate),
+    sdate = coalesce(sdate,date)) %>%
+  select(-date)
+```
+
+#demo_sdate
+has demo_sdate_old but now with the missing adult 7t strain data 
+made up of demo_sdate_old binding with adult_seven_strain_demo
+also had to run adult_seven_strain_demo through seven_drop
+
+```{r}
+#making adult_seven_strain_demo
+# adult_seven_sdate_nodrop <- anti_join(adult_seven_date, seven_drop, by = c("ID"))
+adult_seven_demo <- read.csv("/Users/piyaverma/Downloads/R/adult_seven_strain_demo.csv") #demo info for missing adult 7t but didn't run it through the seven_drop list o
+#running it through the drop list after making id a character in both datasets
+seven_drop <- seven_drop %>% mutate(ID = as.character(ID))
+adult_seven_demo <- adult_seven_demo%>% mutate(ID = as.character(ID))
+
+adult_seven_demo_nodrop <- anti_join(adult_seven_demo, seven_drop, by = c("ID"))
+
+adult_seven_sdate <- adult_seven_strain_sdate%>% #see fixing demo_sdate
+  select(ID, age, sdate)
+#had to do this in order for adult_seven_demodate to work 
+adult_seven_sdate <- adult_seven_sdate %>% mutate(ID = as.character(ID))
+
+adult_seven_demodate <- adult_seven_demo_nodrop %>% 
+  left_join(adult_seven_sdate, by = c("ID", "age"))
+
+#adding adult_seven_demodate onto demo_sdate_old to make demo_sdate which will have all participants after drop filter from both studies with their demographic information and their sdate information
+demo_sdate <- adult_seven_demodate %>% 
+  select(ID, age, study, sex, race, ethnicity, sdate) %>%
+  rbind(demo_sdate_old)
+```
+
+#fixing demo_sdates
+before doing demo_domain, i noticed a problem with the sdate for some people
+i resolved it by making adult_seven_strain_sdate which kept the date completed from the original adult_seven_strain. adult_seven_strain_sdate just as ID, age. the code chunk above should have adult_seven_strain_sdate to make adult_seven_sdate. i definetly didn't need to make adult_seven_strain_sdate and could have just made adult_seven_sdate from adult_seven_strain itself before i transmuted but whatever you live and you learn. adult_seven_strain now has all the strain data cleaned up without the date completed. 
+```{r}
+#converting ID to be a character and date to be as.date to keep yyyy-mm-dd
+#didn't actually need to do the following below because description above is what actually fixed it. the error from the code below allowed me to see that adult_seven_strain needed to be split into two different cleaning sets to use. one for sdate rbind. and the other for variables rbind 
+
+# adult_seven_demodate_test <- adult_seven_demodate %>%
+#   mutate(
+#     ID = as.character(ID),
+#     sdate = as.Date(date)  # strips time, keeps yyyy-mm-dd
+#   )
+# 
+# adult_seven_demodate <- adult_seven_demodate %>%
+#   mutate(
+#     ID = as.character(ID),
+#     sdate = as.Date(sdate)
+#   )
+
+```
+
+#demo_domain
+combining demo_sdate with strain_variables (not variables. variables is strain_variables but missing adult 7t ppl)
+purpose is to keep strain data for IDs from demo_sdate only because variables has repeat ids and dropped people. demo_sdate should now be all people including the missing adult 7t that have filtered out the dropped people. don't know about repeat ids from demo_sdate but that won't be a problem once I get upps data in with their upps date (udate) to filter out repeat ids to keep data with closest upps and strain dates 
+
+```{r}
+#got an error with the freaking x$ID and y$ID are not compatible when doing demo_domain so fixing that first and then doing demo_domain again
+
+demo_sdate <- demo_sdate %>%
+  mutate(ID = as.character(ID))
+
+strain_variables <- strain_variables %>%
+  mutate(ID = as.character(ID))
+
+demo_domain <- demo_sdate %>% 
+  left_join(strain_variables, by = c("ID", "age"))
+
+#getting the warning: detected an unexpected many-to-many relationship between x and y which i'm sure got rid of some of the dropped people? but maybe made extra repeat ids? hopefully that's taken care of when getting upps data and filtering out with udate because strain_variables has (260 obs), demo_sdate has (137 obs) and demo_domain now has (256 obs) so took out 4 people but kept the 137 people from demo_sdate
+
+#did this in the console
+#> unique(demo_domain$ID[duplicated(demo_domain$ID)])
+#  [1] "11734" "11904" "12001" "11879" "11880" "11883" "11878" "11877" "11886" "11891"
+# [11] "11892" "11893" "11894" "11895" "11885" "11884" "11896" "11889" "11897" "11899"
+# [21] "11900" "11902" "11905" "11907" "11909" "11803" "11912" "11626" "11913" "11914"
+# [31] "11915" "11917" "11919" "11920" "11922" "11925" "11931" "11932" "11933" "11934"
+# [41] "11935" "11936" "11937" "11939" "11942" "11943" "11955" "11958" "11960" "11957"
+# [51] "11965" "11966" "11969" "11971" "11972" "11974" "11968" "11975" "11980" "11981"
+# [61] "11983" "11986" "11989" "11990" "11991" "12000" "12004" "12008" "11993" "11950"
+```
+
+#repeat id part 1
+##demo_domain_idfilter
+of those 60 something repeat ids, there are (4 IDs) that within each one have the same date but different data:
+11734, 11904, 11950, 12001  (11734 and 11904 are also in both habit and 7t. as per Finn's advice, i will eventually keep their data from only one study) REVISIT 
+i went through the raw data and of respective dates to filter out the incorrect rows that have the same strain data and the wrong strain data
+i did this with Dan
+the other repeat ids are just in there twice and will be filtered out after udate 
+11734: keep date 2022-10-13,severity 44
+11904: keep date 2022-12-21,severity 14
+11950: keep date 2023-08-08,severity 24
+12001: keep date 2024-02-19,severity 8
+11939: keep date 2023-05-11,severity 3
+
+```{r}
+demo_domain_idfilter <- demo_domain %>%
+  filter(!(ID == "11734" & sdate == as.Date("2022-11-16"))) %>%
+  filter(!(ID == "11904" & sdate == as.Date("2022-12-21") & 
+             severity == "11")) %>%
+  filter(!(ID == "11904" & sdate == as.Date("2023-06-28") &
+           severity == "14")) %>%
+  filter(!(ID == "11950" & sdate == as.Date("2023-06-07"))) %>%
+  filter(!(ID == "11950" & sdate == as.Date("2023-08-08")
+           & severity == "17")) %>%
+  filter(!(ID == "12001" & sdate == as.Date("2024-01-31"))) %>%
+  filter(!(ID == "12001" & sdate == as.Date("2024-02-19")
+           & severity == "11")) %>%
+  filter(!(ID == "11939" & sdate == as.Date("2025-03-11"))) %>%
+#this worked but 11904 and 11734 are still on crack 
+  filter(!(ID == "11904" & sdate == as.Date("2023-06-28"))) %>%
+  filter(!(ID == "11734" & sdate == as.Date("2021-12-14"))) %>%
+  filter(!(ID == "11734" & sdate == as.Date("2022-10-13") & 
+             severity == "38"))
+
+```
+
+#repeat id part 2
+##demo_domain_unique
+unique(demo_domain_idfilter$ID[duplicated(demo_domain_idfilter$ID)])
+after doing ^^ in the console, there were 67 repeat IDs still but within each repeat ID, data was identical so getting rid of all that
+```{r}
+demo_domain_unique <- demo_domain_idfilter %>%
+  distinct(ID, .keep_all = TRUE)
+```
+
+#upps_seven 
+the most unproblematic one i love upps_seven 
+```{r}
+upps_seven <- read.csv("/Users/piyaverma/Downloads/R/upps_seven.csv") 
+#separating lunaid 8 digit date
+
+library(tidyr)
+upps_seven <- upps_seven %>% tidyr:: separate(id, c("ID", "udate_seven"))
+library(dplyr)
+
+upps_seven <- upps_seven %>%
+  rename(udate = udate_seven) %>%
+  relocate(ID, udate, .before = everything())
+  
+
+#taking average of subscales and total for upps_seven
+
+upps_seven <- upps_seven %>%
+  rename(negurg_sum = upps_negurg, 
+         pre_sum = upps_pre, 
+         pers_sum = upps_pers, 
+         ss_sum = upps_ss, 
+         posurg_sum = upps_pu, 
+         total_sum = upps_tot) 
+#these are the summaries of upps subscales and summed total but the way it is supposed to be used is average
+
+#11668 repeat id had no udate and 0 for all upps values so below is filtering that out
+upps_seven <- upps_seven %>%
+  filter(!is.na(udate))
+#trying to change the date in upps_seven from yyyymmdd to yyyy-mm-dd
+library(lubridate)
+upps_seven <- upps_seven %>%
+  mutate(udate = ymd(udate))
+
+upps_seven <- upps_seven %>%
+  mutate(negurg = negurg_sum/12, 
+         pre = pre_sum/11, 
+         pers = pers_sum/10, 
+         ss = ss_sum/12, 
+         posurg = posurg_sum/14, 
+         sum_tot = total_sum/59)
+
+# warning after this is referring to 11626 that doesn't have an sdate in upps_seven
+```
+
+#upps_habit
+```{r}
+upps_habit <- read.csv("/Users/piyaverma/Downloads/R/final_uppsp_new.csv")
+upps_habit <- upps_habit %>% 
+  select(-X) %>%
+  rename(udate = vdate) %>%
+  rename (ID = lunaid)
+
+upps_habit <- upps_habit %>%
+  rename(negurg_sum = upps_negurg, 
+         pre_sum = upps_pre, 
+         pers_sum = upps_pers, 
+         ss_sum = upps_ss, 
+         posurg_sum = upps_pu, 
+         total_sum = upps_tot) 
+
+upps_habit <- upps_habit %>%
+  mutate(negurg = negurg_sum/12, 
+         pre = pre_sum/11, 
+         pers = pers_sum/10, 
+         ss = ss_sum/12, 
+         posurg = posurg_sum/14, 
+         sum_tot = total_sum/59)
+```
+
+#upps_both
+```{r}
+#as numeric over as character crap 
+upps_habit$ID <- as.numeric(upps_habit$ID)
+upps_seven$ID <- as.numeric(upps_seven$ID)
+
+#adding column to specificy study 
+upps_habit <- upps_habit %>%
+  mutate(study = "Habit")
+
+upps_seven <- upps_seven %>%
+  mutate(study = "7T")
+
+#doing the following because before i did this, upps_both 7t udate was random 5 dig no
+upps_habit$udate <- as.Date(upps_habit$udate)
+upps_seven$udate <- as.Date(upps_seven$udate)
+
+upps_both <- rbind(upps_habit, upps_seven)
+
+
+upps_both <- upps_both %>%
+  arrange(ID) %>%
+  select(ID, udate, study, everything())
+```
+
+
+#demo_domain_upps
+merging [demo_domain_unique(that has the IDs that are not dropped, with their demographic information, strain date and strain data and missing adult7t)] with [upps_both (that has the right habit upps and 7t upps data)] 
+i haven't done z score of count and severity yet 
+```{r}
+#keep getting the incompatible character, double error crap so dealt with that first
+
+demo_domain_unique$ID <- as.character(demo_domain_unique$ID) %>% 
+  gsub('[^0-9]','',.) #i think i'm doing the gsub because there was a space in one of the IDs 
+upps_both$ID <- as.character(upps_both$ID) %>% 
+  gsub('[^0-9]','',.)
+ 
+demo_domain_upps <- demo_domain_unique %>%
+  left_join(upps_both, by = c("ID", "study")) 
+
+#went from 169 obs to 276 obs - most likely because people did upps twice which is why i have the dates to do datediff 
+```
+
+#grand_visit
+doing datediff 
+demo_domain_unique went from 169 obs to demo_domain_upps 276 obs because people did upps twice which is why i have the dates to do datediff 
+```{r}
+#filtering our 11626 and 11803 because they don't have sdates for date_diff to work and 12009 because she didn't do upps
+demo_domain_upps <- demo_domain_upps %>%
+  filter(!(ID == "11626")) %>%
+  filter(!(ID == "11803")) %>%
+  filter(!(ID == "12009")) 
+
+#trying to make a new column called date_diff that uses sdate and udate to take the difference so i can keep the one that's minimum 
+
+#problem i'm getting is date_diff isn't showing up as a column in test_datediff. even though the head test says its there, all the dates are dates and there's no NAs
+
+test_datediff <- demo_domain_upps %>%
+  mutate(date_diff = abs(as.Date(sdate) - udate))
+
+test_datediff <- demo_domain_upps %>%
+  mutate(
+    sdate = as.Date(sdate),
+    udate = as.Date(udate),
+    date_diff = abs(sdate - udate)
+  ) %>% group_by(ID,study) %>%
+  mutate(count=n(), min_dd = min(date_diff, na.rm = T)) 
+grand_visit <- test_datediff %>%
+  filter(date_diff == min_dd)
+
+#filering upps outlier
+grand_diva <- grand_visit %>% filter(sum_tot > 1)
+
+```
+
+#z scoring
+for centering, raw is to mean as sd (-1/+1) is to z when mean is 0 
+
+```{r}
+#z scoring severity 
+#setting 20.75 (mean of severity scores of n) to be now 0 as a reference for taking the z scores  
+grand_diva$severity_z <- scale(grand_diva$severity)
+grand_diva$count_z <- scale(grand_diva$count)
+
+#template from Dan. z1 and z2 being severity_z and count_z
+# df <- df %>%
+#   mutate(z_sum = rowSums(across(c(z1, z2)), na.rm = TRUE),
+#          z_avg = rowMeans(across(c(z1, z2)), na.rm = TRUE))
+
+#what i did lol: 
+# test_z <- grand_diva %>%
+#   mutate(z_sum = severity_z + count_z) %>%
+#   mutate(z_avg = (severity_z + count_z)/2)
+
+
+grand_diva <- grand_diva %>%
+  mutate(z_sum = rowSums(across(c(severity_z, count_z)), na.rm = TRUE),
+         z_avg = rowMeans(across(c(severity_z, count_z)), na.rm = TRUE))
+
+```
+
+  #age group column
+splitting age groups by 10-13, 14-17, 18-22, 23-33
+i have 30, 33, 58, 42 of respective age groups
+```{r}
+
+grand_diva <- grand_diva %>%
+  mutate(age_group = cut(age, 
+                         breaks = c(9, 13, 17, 22, 33), 
+                         labels = c("10-13", "14-17", "18-22", "23-33"), 
+                         right = TRUE))
+grand_diva <- grand_diva %>%
+  select(-reproduction_severity, -reproduction_count)
+
+```
+ 
+#demo fix 
+changing mixed people to "More than 1" 
+```{r}
+
+grand_diva <- grand_diva %>%
+  mutate(
+    race = if_else(grepl(",", race), "More than 1", race)
+  )
+```
+
+
+
+GRAND_DIVA IS READY <3 
+
+#write out 
+```{r}
+#template:
+# write.csv(your_dataframe, "/Users/piyaverma/Downloads/R/grand_diva.csv", row.names = FALSE)
+
+write.csv(grand_diva, "/Users/piyaverma/Downloads/R/grand_diva.csv", row.names = FALSE)
+```
+
+
+
+
